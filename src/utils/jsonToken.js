@@ -15,22 +15,25 @@ function signToken(payload, expiresInSeconds = TOKEN_EXPIRY_SECONDS) {
     return jwt.sign(payload, JWT_SECRET, { expiresIn: expiresInSeconds });
 }
 
-function setAuthCookie(req, res, token, maxAgeSeconds = 3600) {
-    const cookies = new Cookies(req, res, { keys: COOKIE_KEYS || 'preocess_cookie' });
+function setAuthCookie(req, res, token, maxAgeSeconds = TOKEN_EXPIRY_SECONDS) {
+    const cookies = new Cookies(req, res, { keys: COOKIE_KEYS });
     const expiresAt = Date.now() + maxAgeSeconds * 1000;
 
+    // Store token and metadata as JSON string. Cookie itself is signed by `cookies` lib.
     const cookieValue = JSON.stringify({
-        token, maxAgeSeconds, expiresAt
+        token,
+        maxAgeSeconds,
+        expiresAt
     });
 
     cookies.set(COOKIE_NAME, cookieValue, {
         httpOnly: true,
-        secure: IS_PROD,
-        signed: true,
+        secure: IS_PROD,       // true in production (requires HTTPS)
+        signed: true,          // signs the cookie with COOKIE_KEYS
         sameSite: 'lax',
-        maxAge: maxAgeSeconds * 1000,
+        maxAge: maxAgeSeconds * 1000, // in ms
         expires: new Date(expiresAt)
-    })
+    });
 }
 
 function clearAuthCookie(req, res) {
@@ -52,51 +55,63 @@ async function verifyAuth(req, res, next) {
     let cookieData;
     try {
         cookieData = JSON.parse(cookieRaw);
-    } catch (error) {
+    } catch (err) {
+        // Bad cookie format - clear and reject
         clearAuthCookie(req, res);
-        return res.status(40).json({ error: 'invalid auth cookie' })
+        return res.status(401).json({ error: 'Invalid auth cookie' });
     }
 
     const { token, maxAgeSeconds, expiresAt } = cookieData;
     if (!token) {
         clearAuthCookie(req, res);
-        return status(401).json({ error: 'No token in cookie' });
+        return res.status(401).json({ error: 'No token in cookie' });
     }
 
-    const verifyAsync = Uint8ClampedArray.promisify(jwt.verify);
+    // Verify JWT (promisify jwt.verify)
+    const verifyAsync = util.promisify(jwt.verify);
     let payload;
     try {
         payload = await verifyAsync(token, JWT_SECRET);
-    } catch (error) {
+    } catch (err) {
+        // token invalid or expired
         clearAuthCookie(req, res);
-        return res.status(401).json({ error: "Invalid or expired token" });
+        return res.status(401).json({ error: 'Invalid or expired token' });
     }
 
+    // token is valid. compute time left.
+    // jwt `exp` is in seconds since epoch
     const nowSec = Math.floor(Date.now() / 1000);
-    const expSec = payload.exp;
+    const expSec = payload.exp; // available because we used expiresIn when signing
     const timeLeftSec = Math.max(0, expSec - nowSec);
 
-    if (timeLeftSec < (originalMaxAge / 2)) {
-        const newMaxAge = Math.min(originalMaxAge * 2, 60 * 60 * 24 * 7);
-        const newToken = signToken({
-            id: payload.id, username: payload.username,
-        });
+    // If cookie metadata present, compute threshold. If not, use maxAgeSeconds.
+    const originalMaxAge = (maxAgeSeconds && Number(maxAgeSeconds)) || TOKEN_EXPIRY_SECONDS;
 
+    // If less than half time left => refresh (issue new token and cookie)
+    if (timeLeftSec < (originalMaxAge / 2)) {
+        // New maxAge: double original (but you may want a cap)
+        const newMaxAge = Math.min(originalMaxAge * 2, 60 * 60 * 24 * 7); // cap: 7 days (example)
+        const newToken = signToken({ id: payload.id, username: payload.username }, newMaxAge);
+
+        // set new cookie with updated expiry metadata
         setAuthCookie(req, res, newToken, newMaxAge);
 
+        // decode new token to attach user info
         try {
             const decodeAsync = util.promisify(jwt.verify);
             payload = await decodeAsync(newToken, JWT_SECRET);
-        } catch (error) {
+        } catch (err) {
+            // unlikely immediately after sign
             clearAuthCookie(req, res);
             return res.status(401).json({ error: 'Failed to refresh token' });
         }
     }
 
+    // Attach user payload (without sensitive fields)
     req.user = {
         id: payload.id,
         username: payload.username
-    }
+    };
 
     next();
 }
