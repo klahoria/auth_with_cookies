@@ -1,11 +1,22 @@
 import { isObjectIdOrHexString } from 'mongoose';
 import products from '../../models/Product.model.js';
 
-async function addProduct(req, res) {
+function handleServerError(res, error, context = '') {
+    console.error(`${context} Error:`, error);
+    return res.status(500).json({
+        success: false,
+        message: 'Something went wrong on the server',
+        details: process.env.NODE_ENV === 'development' ? error?.message : undefined
+    });
+}
+
+// =========================
+// Add Product
+// =========================
+export async function addProduct(req, res) {
     try {
         let { tags = [], price, description, type, name } = req.body;
 
-        // Basic validation
         if (!name || !price || !description || !type) {
             return res.status(400).json({
                 success: false,
@@ -15,37 +26,46 @@ async function addProduct(req, res) {
 
         await products.create({ name, tags, price, description, type });
 
-        res.status(201).json({ success: true });
+        res.status(201).json({ success: true, message: 'Product created successfully' });
     } catch (error) {
-        console.error('Add Product Error:', error);
-        res.status(500).json({
-            success: false,
-            message: error?.message || 'Failed to add product'
-        });
+        handleServerError(res, error, 'Add Product');
     }
 }
 
-async function getProducts(req, res) {
+// =========================
+// Get Product(s)
+// =========================
+export async function getProducts(req, res) {
     try {
         let { productId } = req.params;
-        if (!isObjectIdOrHexString(productId)) {
+
+        if (productId && !isObjectIdOrHexString(productId)) {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid productId'
             });
         }
-        let data = await products.find(productId ? { _id: productId } : {});
-        res.status(200).json(data);
+
+        const query = productId ? { _id: productId } : {};
+        const data = await products.find(query);
+
+        if (productId && data.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: 'Product not found'
+            });
+        }
+
+        res.status(200).json({ success: true, data });
     } catch (error) {
-        console.error('Get Products Error:', error);
-        res.status(500).json({
-            success: false,
-            message: error?.message || 'Failed to fetch products'
-        });
+        handleServerError(res, error, 'Get Products');
     }
 }
 
-async function updateProduct(req, res) {
+// =========================
+// Update Product
+// =========================
+export async function updateProduct(req, res) {
     try {
         let { productId } = req.params;
 
@@ -56,20 +76,20 @@ async function updateProduct(req, res) {
             });
         }
 
-        const update = await products.updateOne(
+        const result = await products.updateOne(
             { _id: productId },
             { $set: req.body },
             { runValidators: true }
         );
 
-        if (update.matchedCount === 0) {
+        if (result.matchedCount === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Product not found'
             });
         }
 
-        if (update.modifiedCount === 0) {
+        if (result.modifiedCount === 0) {
             return res.status(400).json({
                 success: false,
                 message: 'No values to update'
@@ -78,18 +98,17 @@ async function updateProduct(req, res) {
 
         res.status(200).json({
             success: true,
-            message: 'Values updated successfully'
+            message: 'Product updated successfully'
         });
     } catch (error) {
-        console.error('Update Product Error:', error, error?.statusCode);
-        res.status(500).json({
-            success: false,
-            message: error?.message || 'Failed to update product'
-        });
+        handleServerError(res, error, 'Update Product');
     }
 }
 
-async function deleteProduct(req, res) {
+// =========================
+// Delete Product
+// =========================
+export async function deleteProduct(req, res) {
     try {
         let { productId } = req.params;
 
@@ -100,39 +119,20 @@ async function deleteProduct(req, res) {
             });
         }
 
-        const update = await products.deleteOne(
-            { _id: productId },
-            { $set: req.body },
-            { runValidators: true }
-        );
+        const result = await products.deleteOne({ _id: productId });
 
-        if (update.matchedCount === 0) {
+        if (result.deletedCount === 0) {
             return res.status(404).json({
                 success: false,
                 message: 'Product not found'
             });
         }
 
-        if (update.modifiedCount === 0) {
-            return res.status(400).json({
-                success: false,
-                message: 'No values to update'
-            });
-        }
-
         res.status(200).json({
             success: true,
-            message: 'Values updated successfully'
+            message: 'Product deleted successfully'
         });
     } catch (error) {
-        console.error('Update Product Error:', error, error?.statusCode);
-        res.status(500).json({
-            success: false,
-            message: error?.message || 'Failed to update product'
-        });
+        handleServerError(res, error, 'Delete Product');
     }
 }
-
-
-
-export { addProduct, getProducts, updateProduct, deleteProduct };
