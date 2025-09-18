@@ -9,6 +9,8 @@ import morgan from 'morgan';
 import 'dotenv/config'
 import router from './src/api/routes/user.routes.js';
 import productRouter from './src/api/routes/products.routes.js'
+import { errorHandler } from './src/middlewares/errorHandler.js';
+import { asyncHandler } from './src/middlewares/asyncHandler.js';
 // import { useCookies } from './src/utils/jsonToken.js';
 
 const app = express();
@@ -20,16 +22,10 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true, limit: '10mb' }))
 app.use(logger)
 
-// const keys = ['your-secret-key'];
-// app.use((req, res, next) => {
-//     useCookies(keys)
-//     next();
-// });
+app.use(errorHandler);
 
-// global.useCookies = useCookies(keys)
-
-app.use('/api/auth',router)
-app.use('/api/products',productRouter)
+app.use('/api/auth', router)
+app.use('/api/products', productRouter)
 
 const server = http.createServer(app);
 
