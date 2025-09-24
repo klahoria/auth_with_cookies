@@ -6,6 +6,8 @@ import { FaGoogle } from "react-icons/fa"
 import { BsApple } from "react-icons/bs"
 import { SiBinance } from "react-icons/si"
 import { RiWallet3Fill } from "react-icons/ri"
+import React, { useEffect } from "react"
+import UserContext from "./store/UserContext"
 
 type Inputs = {
   email: string
@@ -19,7 +21,7 @@ const socialButtons = [
   { icon: RiWallet3Fill, label: "Continue with Wallet" },
 ]
 
-function App() {
+function App(props) {
   const { register, handleSubmit, formState: { errors } } = useForm<Inputs>()
   const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data)
 
@@ -32,13 +34,24 @@ function App() {
     console.log(password)
   }
 
+  const values = React.useContext(UserContext);
+
+
+  useEffect(() => {
+    console.log(values, "props")
+  }, [])
+
+  useEffect(() => {
+    console.log(values.values.view, "values.values.view")
+  }, [values.values.view])
+
   return (
     <div className="w-lvw h-lvh flex items-center justify-around bg-[radial-gradient(circle,rgba(212,216,217,1)_31%,rgba(255,255,255,1)_100%)]">
       <div className="bg-[#f8f8f8] overflow-hidden shadow-md rounded-2xl">
         <div className="rounded-2xl shadow-md p-8 w-full max-w-[500px] bg-white">
 
           {/* Login/Signup Tabs */}
-          <div className="flex items-center justify-center gap-x-3">
+          <div className={"flex items-center justify-center gap-x-3"}>
             {[
               { icon: LogIn, label: "Login" },
               { icon: LogOut, label: "Signup" },
@@ -50,33 +63,35 @@ function App() {
             ))}
           </div>
 
-          <div className="mt-5 px-3">
+          <div className={(values.values.view !== 'login' ? 'order-1 ' : 'order-2 ') + "mt-5 px-3"}>
             <form onSubmit={handleSubmit(onSubmit)}>
-              {inputs.map(({ id, label, placeholder, type, labelRight, forgotPassword }) => (
-                <div className="mt-5" key={id}>
-                  <label htmlFor={id}>
-                    <span className="flex items-center justify-between">
-                      <p className="text-base text-[#2B2D30] font-medium mb-1">{label}</p>
-                      {labelRight ?
-                        <p className="text-base text-[#2B2D30] font-medium mb-1 cursor-pointer" onClick={() => forgotPassword("test")}>{labelRight}</p>
-                        : ""
-                      }
-                    </span>
-                    <Input
-                      type={type || 'text'}
-                      className="py-2 h-[46px] text-[#2B2D30]"
-                      style={{ fontSize: "16px" }}
-                      placeholder={placeholder}
-                      {...register(id)}
-                    />
-                  </label>
-                </div>
-              ))}
+              <div className={(values.values.view !== 'login' ? 'order-1' : 'order-2')}>
+                {inputs.map(({ id, label, placeholder, type, labelRight, forgotPassword }) => (
+                  <div className="mt-5" key={id}>
+                    <label htmlFor={id}>
+                      <span className="flex items-center justify-between">
+                        <p className="text-base text-[#2B2D30] font-medium mb-1">{label}</p>
+                        {labelRight ?
+                          <p className="text-base text-[#2B2D30] font-medium mb-1 cursor-pointer" onClick={() => forgotPassword("test")}>{labelRight}</p>
+                          : ""
+                        }
+                      </span>
+                      <Input
+                        type={type || 'text'}
+                        className="py-2 h-[46px] text-[#2B2D30]"
+                        style={{ fontSize: "16px" }}
+                        placeholder={placeholder}
+                        {...register(id)}
+                      />
+                    </label>
+                  </div>
+                ))}
 
-              <div className="mt-5">
-                <Button className="bg-black border rounded-xl h-[46px] hover:text-black hover:bg-gray-400 text-white w-full cursor-pointer">
-                  Login
-                </Button>
+                <div className="mt-5">
+                  <Button className="bg-black border rounded-xl h-[46px] hover:text-black hover:bg-gray-400 text-white w-full cursor-pointer">
+                    Login
+                  </Button>
+                </div>
               </div>
 
               {/* Divider */}
@@ -85,9 +100,9 @@ function App() {
                 <p className="mb-1">or</p>
                 <span className="inline-block w-full after:block after:flex-1 after:h-px after:bg-gray-400" />
               </div>
-              
+
               {/* Social Buttons */}
-              <div className="[&>button:not(:last-child)]:mb-3 mt-3">
+              <div className={(values.values.view !== 'login' ? 'order-2' : 'order-1') + " [&>button:not(:last-child)]:mb-3 mt-3"}>
                 {socialButtons.map(({ icon: Icon, label }) => (
                   <Button type="button" key={label} className="bg-white border rounded-xl h-[46px] hover:text-white text-black w-full cursor-pointer">
                     <div className="flex items-center gap-x-2 min-w-[192px]">
@@ -112,9 +127,6 @@ function App() {
           </p>
         </div>
       </div>
-
-
-
     </div>
   )
 }
