@@ -85,7 +85,7 @@ function App() {
                 <p className="mb-1">or</p>
                 <span className="inline-block w-full after:block after:flex-1 after:h-px after:bg-gray-400" />
               </div>
-
+              
               {/* Social Buttons */}
               <div className="[&>button:not(:last-child)]:mb-3 mt-3">
                 {socialButtons.map(({ icon: Icon, label }) => (

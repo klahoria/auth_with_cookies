@@ -2,7 +2,6 @@ import express from 'express';
 import cors from 'cors';
 import http from 'http';
 import connectDB from './src/config/db.js'
-import Cookies from 'cookies';
 import morgan from 'morgan';
 
 // require('dotenv').config('')
@@ -10,7 +9,6 @@ import 'dotenv/config'
 import router from './src/api/routes/user.routes.js';
 import productRouter from './src/api/routes/products.routes.js'
 import { errorHandler } from './src/middlewares/errorHandler.js';
-import { asyncHandler } from './src/middlewares/asyncHandler.js';
 // import { useCookies } from './src/utils/jsonToken.js';
 
 const app = express();
