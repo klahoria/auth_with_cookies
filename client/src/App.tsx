@@ -63,11 +63,11 @@ function App(props) {
             ))}
           </div>
 
-          <div className={(values.values.view !== 'login' ? 'order-1 ' : 'order-2 ') + "mt-5 px-3"}>
-            <form onSubmit={handleSubmit(onSubmit)}>
-              <div className={(values.values.view !== 'login' ? 'order-1' : 'order-2')}>
+          <div className={"my-5 px-3"}>
+            <form className="flex flex-col items-center justify-around" onSubmit={handleSubmit(onSubmit)}>
+              <div className={(values.values.view !== 'login' ? 'order-1' : 'order-3') + " min-w-full [&>div:not(:first-child)]:mt-5"}>
                 {inputs.map(({ id, label, placeholder, type, labelRight, forgotPassword }) => (
-                  <div className="mt-5" key={id}>
+                  <div className="" key={id}>
                     <label htmlFor={id}>
                       <span className="flex items-center justify-between">
                         <p className="text-base text-[#2B2D30] font-medium mb-1">{label}</p>
@@ -95,14 +95,16 @@ function App(props) {
               </div>
 
               {/* Divider */}
-              <div className="gap-2 flex items-center mt-3 relative">
-                <span className="inline-block w-full before:block before:flex-1 before:h-px before:bg-gray-400" />
-                <p className="mb-1">or</p>
-                <span className="inline-block w-full after:block after:flex-1 after:h-px after:bg-gray-400" />
+              <div className="order-2 min-w-full">
+                <div className="gap-2 flex items-center my-3 relative">
+                  <span className="inline-block w-full before:block before:flex-1 before:h-px before:bg-gray-400" />
+                  <p className="mb-1">or</p>
+                  <span className="inline-block w-full after:block after:flex-1 after:h-px after:bg-gray-400" />
+                </div>
               </div>
 
               {/* Social Buttons */}
-              <div className={(values.values.view !== 'login' ? 'order-2' : 'order-1') + " [&>button:not(:last-child)]:mb-3 mt-3"}>
+              <div className={(values.values.view !== 'login' ? 'order-3' : 'order-1') + " [&>button:not(:last-child)]:mb-3 mt-3 min-w-full"}>
                 {socialButtons.map(({ icon: Icon, label }) => (
                   <Button type="button" key={label} className="bg-white border rounded-xl h-[46px] hover:text-white text-black w-full cursor-pointer">
                     <div className="flex items-center gap-x-2 min-w-[192px]">
