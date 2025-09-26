@@ -1,5 +1,5 @@
 // UserContext.tsx
-import { createContext } from "react";
+import { createContext, useState } from "react";
 
 export type User = {
   name: string;
@@ -27,7 +27,7 @@ const defaultUser: UserContextType = {
   },
   setView: () => {
     throw new Error("setUser called outside of UserProvider");
-  }
+  },
 };
 
 const UserContext = createContext<UserContextType>(defaultUser);

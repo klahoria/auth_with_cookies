@@ -53,10 +53,10 @@ function App(props) {
           {/* Login/Signup Tabs */}
           <div className={"flex items-center justify-center gap-x-3"}>
             {[
-              { icon: LogIn, label: "Login" },
-              { icon: LogOut, label: "Signup" },
-            ].map(({ icon: Icon, label }) => (
-              <div key={label} className="cursor-pointer px-2 py-1 shadow-md rounded flex items-center gap-x-1">
+              { icon: LogIn, label: "Login", view: 'login' },
+              { icon: LogOut, label: "Signup", view: 'register' },
+            ].map(({ icon: Icon, label,view }) => (
+              <div key={label} className="cursor-pointer px-2 py-1 shadow-md rounded flex items-center gap-x-1" onClick={()=>values.setView(view)} >
                 <Icon height={16} />
                 <span className="text-base">{label}</span>
               </div>
