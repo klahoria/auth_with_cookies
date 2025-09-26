@@ -1,4 +1,4 @@
-import { LogIn, LogOut } from "lucide-react"
+import { ArrowRight, LogIn, LogOut } from "lucide-react"
 import { useForm, type SubmitHandler } from "react-hook-form"
 import { Input } from "./components/ui/input"
 import { Button } from "./components/ui/button"
@@ -63,9 +63,9 @@ function App(props) {
             ))}
           </div>
 
-          <div className={"my-5 px-3"}>
+          <div className={"my-5 px-3 "}>
             <form className="flex flex-col items-center justify-around" onSubmit={handleSubmit(onSubmit)}>
-              <div className={(values.values.view !== 'login' ? 'order-1' : 'order-3') + " min-w-full [&>div:not(:first-child)]:mt-5"}>
+              <div className={(values.values.view == 'login' ? 'order-1' : 'order-3') + " min-w-full [&>div:not(:first-child)]:mt-5"}>
                 {inputs.map(({ id, label, placeholder, type, labelRight, forgotPassword }) => (
                   <div className="" key={id}>
                     <label htmlFor={id}>
@@ -89,7 +89,7 @@ function App(props) {
 
                 <div className="mt-5">
                   <Button className="bg-black border rounded-xl h-[46px] hover:text-black hover:bg-gray-400 text-white w-full cursor-pointer">
-                    Login
+                    Login <ArrowRight animation="pointing" />
                   </Button>
                 </div>
               </div>
@@ -104,7 +104,7 @@ function App(props) {
               </div>
 
               {/* Social Buttons */}
-              <div className={(values.values.view !== 'login' ? 'order-3' : 'order-1') + " [&>button:not(:last-child)]:mb-3 mt-3 min-w-full"}>
+              <div className={(values.values.view == 'login' ? 'order-3' : 'order-1') + " [&>button:not(:last-child)]:mb-3 mt-3 min-w-full"}>
                 {socialButtons.map(({ icon: Icon, label }) => (
                   <Button type="button" key={label} className="bg-white border rounded-xl h-[46px] hover:text-white text-black w-full cursor-pointer">
                     <div className="flex items-center gap-x-2 min-w-[192px]">
