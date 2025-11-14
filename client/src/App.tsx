@@ -57,16 +57,35 @@ function App() {
   const tabRefs = useRef<(HTMLElement | null)[]>([]);
 
   const onSubmit: SubmitHandler<Inputs> = (data) => console.log(data);
-
-  const handleForgotPassword = (password: unknown) => {
+  const handleForgotPassword = (password: unknown) =>
     console.log("Forgot password for:", password);
-  };
-
-  useEffect(() => {
-    console.log("User context values:", values);
-  }, [values]);
 
   const isLogin = values.view === "login";
+
+  // Define motion variants that change direction depending on the view
+  const formVariants = {
+    initial: (isLogin: boolean) => ({
+      opacity: 1,
+      y: isLogin ? -280 : 80, // Move up on signup, down on login
+    }),
+    animate: { opacity: 1, y: 0 },
+    exit: (isLogin: boolean) => ({
+      opacity: 1,
+      y: isLogin ? 0 : -200, // Opposite exit direction
+    }),
+  };
+
+  const socialVariants = {
+    initial: (isLogin: boolean) => ({
+      opacity: 0,
+      y: isLogin ? 80 : -80, // Opposite of form
+    }),
+    animate: { opacity: 1, y: 0 },
+    exit: (isLogin: boolean) => ({
+      opacity: 0,
+      y: isLogin ? -80 : 80, // Opposite exit direction
+    }),
+  };
 
   return (
     <div className="flex items-center justify-around w-lvw h-lvh bg-[radial-gradient(circle,rgba(212,216,217,1)_31%,rgba(255,255,255,1)_100%)]">
@@ -74,15 +93,13 @@ function App() {
         <div className="rounded-2xl shadow-md p-8 w-full max-w-[500px] bg-white">
           {/* Tabs */}
           <div className="flex justify-center gap-x-3 mb-6">
-            <div className="bg-gray-300 grid grid-cols-2 place-content-center rounded-sm p-1 relative transition-all duration-150">
-              {/* Animated indicator */}
+            <div className="bg-gray-300 grid grid-cols-2 place-content-center rounded-sm p-1 relative">
+              {/* Animated tab indicator */}
               <motion.div
                 layout
                 transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`bg-white rounded-sm absolute top-1 left-1 w-[94px] h-[32px] z-[1]`}
-                animate={{
-                  x: isLogin ? 0 : 94,
-                }}
+                className="bg-white rounded-sm absolute top-1 left-1 w-[94px] h-[32px] z-[1]"
+                animate={{ x: isLogin ? 0 : 94 }}
               />
               {tabItems.map(({ icon: Icon, label, view }, i) => (
                 <div
@@ -101,19 +118,30 @@ function App() {
             </div>
           </div>
 
-          {/* Animated Form Container */}
-          <AnimatePresence mode="wait">
-            <form className="flex flex-col items-center justify-around my-5 px-3"
-              onSubmit={handleSubmit(onSubmit)}
-            >
-              {/* Inputs */}
+          {/* Animated Form + Social Sections */}
+          <form
+            className="flex flex-col items-center justify-around my-5 px-3"
+            onSubmit={handleSubmit(onSubmit)}
+          >
+            <AnimatePresence mode="wait" custom={isLogin}>
+              {/* Form section */}
               <motion.div
-                key={values.view}
-                initial={{ opacity: 0.8, y: -140 }}
-                animate={{ opacity: 1, y: 0 }}
-                // exit={{ opacity: 0, y: -40 }}
-                transition={{ duration: 0.4, ease: "easeInOut" }}
-                className="min-w-full space-y-5">
+                key={values.view + "-form"}
+                // animate={{
+                //   y: isLogin ? 0 : 280,
+                //   animationDirection: '',     // 👈 move up/down
+                //   scale: isLogin ? 1 : 1,    // 👈 scale transform
+                //   rotate: isLogin ? 0 : 0,    // 👈 optional rotation
+                // }}
+                // transition={{
+                //   type: "tween",
+                //   stiffness: 120,
+                //   ease: "easeInOut",
+                //   damping: 15,
+                // }}
+                // initial={{ y: isLogin ? 280 : 0 }}
+                className="min-w-full space-y-5"
+              >
                 {inputs.map(({ id, type, label, placeholder, labelRight }) => (
                   <div key={id}>
                     <label htmlFor={id}>
@@ -141,48 +169,74 @@ function App() {
                     </label>
                   </div>
                 ))}
-
                 <Button className="bg-black border rounded-xl h-[46px] hover:text-black hover:bg-gray-400 text-white w-full cursor-pointer">
                   {isLogin ? "Login" : "Signup"} <ArrowRight />
                 </Button>
               </motion.div>
 
               {/* Divider */}
-              <div className="w-full my-5">
+              <motion.div
+                key={values.view + "-divider"}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full my-5"
+
+              >
                 <div className="flex items-center gap-2 relative">
                   <span className="flex-1 h-px bg-gray-400" />
                   <p className="text-gray-500">or</p>
                   <span className="flex-1 h-px bg-gray-400" />
                 </div>
-              </div>
+              </motion.div>
 
-              {/* Social Buttons */}
+              {/* Social buttons */}
               <motion.div
-                key={isLogin ? "login-social" : "signup-social"}
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -30 }}
-                transition={{ duration: 0.3 }}
+                key={values.view + "-social"}
+                // animate={{
+                //   y: isLogin ? 0 : -280,     // 👈 move up/down
+                //   scale: isLogin ? 1 : 1,    // 👈 scale transform
+                //   rotate: isLogin ? 0 : 0,    // 👈 optional rotation
+                // }}
+                // transition={{
+                //   type: "spring",
+                //   stiffness: 120,
+                //   damping: 15,
+                //   ease: "easeInOut",
+
+                // }}
+                // initial={{ y: !isLogin ? 280 : -280 }}
+
                 className="min-w-full space-y-3"
               >
                 {socialButtons.map(({ icon: Icon, label }) => (
-                  <Button
+                  <motion.button
                     type="button"
-                    key={label}
-                    className="bg-white border rounded-xl h-[46px] hover:bg-black hover:text-white text-black w-full cursor-pointer"
+                    key={label + "-social"}
+                    className="min-w-[250px] bg-white border rounded-xl h-[46px] hover:bg-black hover:text-white text-black w-full cursor-pointer"
+                    transition={{
+                      type: "spring",
+                      stiffness: 120,
+                      damping: 15,
+                      ease: "easeInOut",
+
+                    }}
+                    initial={{ y: !isLogin ? 0 : -0 }}
+                    exit={{ y: !isLogin ? 0 : 0 }}
                   >
                     <div className="flex items-center gap-x-2 min-w-[192px] justify-center">
                       <Icon className="h-[25px] w-[25px]" />
                       <span className="text-base">{label}</span>
                     </div>
-                  </Button>
+                  </motion.button>
                 ))}
               </motion.div>
-            </form>
-          </AnimatePresence>
+            </AnimatePresence>
+          </form>
         </div>
 
-        {/* Footer with animation */}
+        {/* Footer */}
         <motion.div
           key={values.view}
           initial={{ opacity: 0, y: 10 }}
