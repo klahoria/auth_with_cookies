@@ -9,6 +9,8 @@ import { RiWallet3Fill } from "react-icons/ri";
 import { Input } from "./components/ui/input";
 import { Button } from "./components/ui/button";
 import UserContext, { type View } from "./store/UserContext";
+import ExitAnimation from "./components/other/ExitAnimation";
+import StackedButtons from "./components/other/StackedButtons";
 
 type Inputs = {
   email: string;
@@ -127,19 +129,19 @@ function App() {
               {/* Form section */}
               <motion.div
                 key={values.view + "-form"}
-                // animate={{
-                //   y: isLogin ? 0 : 280,
-                //   animationDirection: '',     // 👈 move up/down
-                //   scale: isLogin ? 1 : 1,    // 👈 scale transform
-                //   rotate: isLogin ? 0 : 0,    // 👈 optional rotation
-                // }}
-                // transition={{
-                //   type: "tween",
-                //   stiffness: 120,
-                //   ease: "easeInOut",
-                //   damping: 15,
-                // }}
-                // initial={{ y: isLogin ? 280 : 0 }}
+                animate={{
+                  y: isLogin ? 0 : 280,
+                  animationDirection: 2,     // 👈 move up/down
+                  scale: isLogin ? 1 : 1,    // 👈 scale transform
+                  rotate: isLogin ? 0 : 0,    // 👈 optional rotation
+                }}
+                transition={{
+                  type: "tween",
+                  stiffness: 120,
+                  ease: "easeInOut",
+                  damping: 15,
+                }}
+                initial={{ y: isLogin ? 280 : -280 }}
                 className="min-w-full space-y-5"
               >
                 {inputs.map(({ id, type, label, placeholder, labelRight }) => (
@@ -194,36 +196,40 @@ function App() {
               {/* Social buttons */}
               <motion.div
                 key={values.view + "-social"}
-                // animate={{
-                //   y: isLogin ? 0 : -280,     // 👈 move up/down
-                //   scale: isLogin ? 1 : 1,    // 👈 scale transform
-                //   rotate: isLogin ? 0 : 0,    // 👈 optional rotation
-                // }}
-                // transition={{
-                //   type: "spring",
-                //   stiffness: 120,
-                //   damping: 15,
-                //   ease: "easeInOut",
+                animate={{
+                  y: isLogin ? 0 : -280,     // 👈 move up/down
+                  scale: isLogin ? 1 : 1,    // 👈 scale transform
+                  rotate: isLogin ? 0 : 0,    // 👈 optional rotation
+                  animationDuration: 20
+                }}
+                transition={{
+                  type: "spring",
+                  stiffness: 120,
+                  damping: 15,
+                  ease: "easeInOut",
 
-                // }}
-                // initial={{ y: !isLogin ? 280 : -280 }}
+                }}
+                initial={{ y: !isLogin ? 280 : -280, scale: 1 }}
 
                 className="min-w-full space-y-3"
               >
-                {socialButtons.map(({ icon: Icon, label }) => (
+                {socialButtons.map(({ icon: Icon, label }, i) => (
                   <motion.button
                     type="button"
                     key={label + "-social"}
                     className="min-w-[250px] bg-white border rounded-xl h-[46px] hover:bg-black hover:text-white text-black w-full cursor-pointer"
-                    transition={{
-                      type: "spring",
-                      stiffness: 120,
-                      damping: 15,
-                      ease: "easeInOut",
 
+                    initial={{ opacity: 0, y: i * 55 }}
+                    animate={{
+                      opacity: 1,
+                      y: 0,   // 👈 Changed: Slide from below to 0, no extra movement
                     }}
-                    initial={{ y: !isLogin ? 0 : -0 }}
-                    exit={{ y: !isLogin ? 0 : 0 }}
+                    exit={{ opacity: 0, y: -i * 55 }}
+                    transition={{
+                      duration: 0.5,
+                      ease: "easeOut",
+                      delay: i * 0.1 + 0.7  // 👈 Adjusted: Stagger delay based on index
+                    }}
                   >
                     <div className="flex items-center gap-x-2 min-w-[192px] justify-center">
                       <Icon className="h-[25px] w-[25px]" />
